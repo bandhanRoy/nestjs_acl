@@ -9,6 +9,7 @@ import { Reflector } from '@nestjs/core';
 import { DataSource } from 'typeorm';
 import { Entity } from '../../api/entities/entities/entity.entity';
 import { Path } from '../../decorator/path.decorator';
+import { EntityRouteEnum } from '../../enums/entity.enum';
 
 @Injectable()
 export class RoleGuard implements CanActivate {
@@ -18,7 +19,10 @@ export class RoleGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const path = this.reflector.get(Path, context.getHandler());
+    const path = this.reflector.getAllAndOverride<EntityRouteEnum>(Path, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
     if (!path) {
       Logger.error('Path is required for role to work');
       throw new UnauthorizedException('Path is missing');
@@ -35,6 +39,7 @@ export class RoleGuard implements CanActivate {
         route: path,
       },
       select: {
+        id: true,
         route: true,
         method: true,
         roles: {
@@ -42,7 +47,6 @@ export class RoleGuard implements CanActivate {
         },
       },
     });
-    console.log(roles);
     if (!roles) {
       Logger.log(
         'Role not defined for the route but guard was added to this route',

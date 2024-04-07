@@ -1,6 +1,5 @@
 import {
   Injectable,
-  InternalServerErrorException,
   Logger,
   NestMiddleware,
   UnauthorizedException,
@@ -20,15 +19,10 @@ export class AuthMiddleware implements NestMiddleware {
       const decoded = jwt.verify(token, this.configService.get('JWT_SECRET'));
       if (!decoded)
         throw new UnauthorizedException('Not authorized to access endpoint');
-      req['user'] = decoded as UserTokenPayload;
+      req['user'] = decoded['data'] as UserTokenPayload;
     } catch (error) {
       Logger.error('Error occurred while validating token', error);
-      if (error instanceof jwt.JsonWebTokenError) {
-        throw new InternalServerErrorException(
-          'Something went wrong while validating token',
-        );
-      } else
-        throw new UnauthorizedException('Not authorized to access endpoint');
+      throw new UnauthorizedException('Not authorized to access endpoint');
     }
     next();
   }
