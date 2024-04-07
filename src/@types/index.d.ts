@@ -1,4 +1,4 @@
-declare namespace Express {
+declare module 'express' {
   export interface Request {
     user?: UserTokenPayload;
   }

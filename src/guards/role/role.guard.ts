@@ -9,7 +9,8 @@ import { Reflector } from '@nestjs/core';
 import { DataSource } from 'typeorm';
 import { Entity } from '../../api/entities/entities/entity.entity';
 import { Path } from '../../decorator/path.decorator';
-import { EntityRouteEnum } from '../../enums/entity.enum';
+import { EntityMethodEnum, EntityRouteEnum } from '../../enums/entity.enum';
+import { Request } from 'express';
 
 @Injectable()
 export class RoleGuard implements CanActivate {
@@ -27,9 +28,9 @@ export class RoleGuard implements CanActivate {
       Logger.error('Path is required for role to work');
       throw new UnauthorizedException('Path is missing');
     }
-    const request = context.switchToHttp().getRequest();
+    const request: Request = context.switchToHttp().getRequest();
     const user = request.user;
-    const method = request.method.trim().toUpperCase();
+    const method = request.method.trim().toUpperCase() as EntityMethodEnum;
     const roles = await this.dataSource.getRepository(Entity).findOne({
       relations: {
         roles: true,
